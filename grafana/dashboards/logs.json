@@ -1,0 +1,225 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Application logs collected by Grafana Alloy and stored in Loki",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null } ] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "value" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\"} [$__interval]))", "queryType": "range" }
+      ],
+      "title": "Total log lines",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 } ] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "value" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=\"WARNING\"} [$__interval]))", "queryType": "range" }
+      ],
+      "title": "Warnings",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "value" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=~\"ERROR|CRITICAL\"} [$__interval]))", "queryType": "range" }
+      ],
+      "title": "Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 2 }, { "color": "red", "value": 5 } ] }, "unit": "percent", "decimals": 1 },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum(count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=~\"ERROR|CRITICAL\"} [$__range])) / sum(count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\"} [$__range]))", "queryType": "instant" }
+      ],
+      "title": "Error ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "stacking": { "mode": "normal", "group": "A" }, "lineWidth": 1 },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "INFO" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ] },
+          { "matcher": { "id": "byName", "options": "WARNING" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } } ] },
+          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ] },
+          { "matcher": { "id": "byName", "options": "CRITICAL" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } } ] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "refId": "A", "expr": "sum by (level) (count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=~\"$level\"} [$__interval]))", "legendFormat": "{{level}}", "queryType": "range" }
+      ],
+      "title": "Log volume by level",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "showPoints": "never" },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "refId": "A", "expr": "sum by (component) (count_over_time({job=\"flask-app-logs\", level!=\"\", component!=\"\", component=~\"$component\", level=~\"ERROR|CRITICAL\"} [$__interval]))", "legendFormat": "{{component}}", "queryType": "range" }
+      ],
+      "title": "Errors by component",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Value #A" }, "properties": [ { "id": "displayName", "value": "Count" } ] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 7,
+      "options": { "showHeader": true, "sortBy": [ { "desc": true, "displayName": "Count" } ] },
+      "targets": [
+        { "refId": "A", "expr": "topk(10, sum by (message, component) (count_over_time({job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=~\"WARNING|ERROR|CRITICAL\"} | json | keep message, component [$__range])))", "queryType": "instant", "format": "table" }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "message": "Message", "component": "Component" } } }
+      ],
+      "title": "Top warnings and errors",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 8,
+      "options": { "displayLabels": ["percent"], "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value"] }, "pieType": "donut", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "targets": [
+        { "refId": "A", "expr": "sum by (component) (count_over_time({job=\"flask-app-logs\", level!=\"\", component!=\"\", component=~\"$component\"} [$__range]))", "legendFormat": "{{component}}", "queryType": "instant" }
+      ],
+      "title": "Logs by component",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${loki_ds}" },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 20 },
+      "id": 9,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        { "refId": "A", "expr": "{job=\"flask-app-logs\", level!=\"\", component=~\"$component\", level=~\"$level\"} |= `$search` | json | __error__=`` | line_format `{{printf \"%-8s\" .level}} [{{.component}}] {{.message}} {{if .status_code}}status={{.status_code}}{{end}} {{if .duration}}duration={{.duration}}s{{end}} {{if .user_id}}user={{.user_id}}{{end}} {{if .error}}error=\"{{.error}}\"{{end}}`", "queryType": "range" }
+      ],
+      "title": "Application logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["logs", "loki", "application"],
+  "templating": {
+    "list": [
+      {
+        "name": "loki_ds",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "loki",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "component",
+        "label": "Component",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${loki_ds}" },
+        "query": { "label": "component", "stream": "{job=\"flask-app-logs\"}", "type": 1 },
+        "definition": "label_values({job=\"flask-app-logs\"}, component)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "refresh": 2,
+        "sort": 1,
+        "hide": 0
+      },
+      {
+        "name": "level",
+        "label": "Level",
+        "type": "custom",
+        "query": "INFO,WARNING,ERROR,CRITICAL",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "options": [],
+        "hide": 0
+      },
+      {
+        "name": "search",
+        "label": "Search",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": "", "value": "" },
+        "hide": 0
+      }
+    ]
+  },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Application logs",
+  "uid": "app-logs",
+  "version": 1
+}

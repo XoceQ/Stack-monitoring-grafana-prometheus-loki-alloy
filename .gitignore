@@ -1,0 +1,52 @@
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backups
+backup-*/
+
+# Docker volume data (when exported)
+prometheus-data/
+grafana-data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js (if added in the future)
+node_modules/
+npm-debug.log*
+
+# Local configuration (copy .env.example to .env)
+.env
+.env.local
+.env.production
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Docker temporary files
+.dockerignore 

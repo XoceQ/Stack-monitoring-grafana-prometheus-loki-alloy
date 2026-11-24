@@ -1,0 +1,79 @@
+groups:
+  # Host system alerts
+  - name: system
+    rules:
+      # Fires when CPU usage is high
+      - alert: HighCpuUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is at {{ $value }}% on {{ $labels.instance }} for more than 2 minutes"
+
+      # Fires when memory usage is high
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is at {{ $value }}% on {{ $labels.instance }}"
+
+      # Fires when free disk space is low
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value }}% of disk space is available on {{ $labels.instance }}"
+
+  # Service alerts
+  - name: services
+    rules:
+      # Fires when a scrape target is down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute"
+
+      # Fires on high response latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected"
+          description: "P95 latency is {{ $value }}s on {{ $labels.instance }}"
+
+  # Sample application alerts
+  - name: application
+    rules:
+      # Fires when there are many HTTP errors
+      - alert: HighHttpErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate"
+          description: "The 5xx error rate is {{ $value }} per second on {{ $labels.instance }}"
+
+      # Fires when the request rate is very high
+      - alert: HighHttpLoad
+        expr: rate(http_requests_total[5m]) > 100
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP request load"
+          description: "The application is receiving {{ $value }} requests per second"
